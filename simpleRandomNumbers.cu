@@ -71,17 +71,16 @@ __global__ void RandGen (int* GPUNums, curandState_t* RandStates){
 int main(){
 	// Allocate memory for the array of
 	// random numbers that we want
-	int CPUNums[NumOfRand];
 	int* GPUNums;
 
 	// Define a pointer for the cuRandStates
 	curandState_t* RandStates;
 
 	// Allocate the memory for the output nums
-	CUDA_CALL(cudaMalloc((void**) &GPUNums, sizeof(int) * NumOfRand));
+	CUDA_CALL(cudaMallocManaged((void**)&GPUNums, sizeof(int) * NumOfRand));
 
 	// Allocate memory for the different curandStates on each core
-	CUDA_CALL(cudaMalloc((void**) &RandStates, sizeof(curandState) * NumOfRand));
+	CUDA_CALL(cudaMallocManaged((void**)&RandStates, sizeof(curandState) * NumOfRand));
 
 	// Launch params
 	dim3 BlockSize (NUM_THREADS_X, NUM_THREADS_Y, 1);
@@ -97,16 +96,12 @@ int main(){
 	CUDA_CHECK();
 	CUDA_CALL( cudaDeviceSynchronize());
 
-	// Get the results back to the host mem
-	CUDA_CALL(cudaMemcpy(CPUNums, GPUNums, NumOfRand*sizeof(int), cudaMemcpyDeviceToHost));
-
 	// Just print some for examination
 	for (int i=0; i<40; i++){
-		printf ("%0d ", CPUNums[i]);
+		printf ("%0d ", GPUNums[i]);
 		if(i%10 == 9)  {
 			printf(" \n");
 		}
 	}    
 	return 0;
 }
-
